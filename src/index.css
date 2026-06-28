@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Smooth scrolling when users click navbar links */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optional: Clean up scrollbars for a premium look on mobile */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+}

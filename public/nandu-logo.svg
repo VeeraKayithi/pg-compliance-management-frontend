@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="estateGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#9f1239" />
+    </linearGradient>
+  </defs>
+
+  <g fill="none" stroke="url(#estateGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    
+    <path d="M 12 42 L 50 12 L 88 42" />
+
+    <path d="M 25 88 L 25 42 L 75 88 L 75 42" />
+    
+  </g>
+</svg>
