@@ -42,9 +42,9 @@ const CAMPUS_DATA = {
       images: [ashwa1, ashwa2, ashwa3, ashwa4, ashwa5, ashwa6], 
       neighborhood: ['🚶‍♂️ 5 mins to Raheja Mindspace', '🚇 10 mins to Raidurg Metro'],
       sharingOptions: [
-        { type: 'Single Room', price: '₹15,000' },
-        { type: 'Two Sharing', price: '₹8,500' },
-        { type: 'Three Sharing', price: '₹6,500' }
+        { type: 'Single Room', price: '₹23,000' },
+        { type: 'Two Sharing', price: '₹18,000' },
+        { type: 'Three Sharing', price: '₹14,000' }
       ]
     },
     {
