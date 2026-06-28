@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import logoImg from './assets/logo.png'; 
 
 // --- 1. IMPORT YOUR IMAGES HERE ---
 import mainImg from './assets/main.jpg';
@@ -42,9 +41,10 @@ const CAMPUS_DATA = {
       images: [ashwa1, ashwa2, ashwa3, ashwa4, ashwa5, ashwa6], 
       neighborhood: ['🚶‍♂️ 5 mins to Raheja Mindspace', '🚇 10 mins to Raidurg Metro'],
       sharingOptions: [
-        { type: 'Single Room', price: '₹23,000' },
-        { type: 'Two Sharing', price: '₹18,000' },
-        { type: 'Three Sharing', price: '₹14,000' }
+        { type: 'Single Room', priceNonAC: '₹15,000', priceAC: '₹17,000' },
+        { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
+        { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
+        { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
       ]
     },
     {
@@ -53,13 +53,14 @@ const CAMPUS_DATA = {
       tagline: 'Independent Men\'s PG',
       location: 'Khajaguda - Nanakramguda Rd, Rai Durg, Hyderabad',
       mapLink: 'https://maps.app.goo.gl/W93VqEoiVtTGbPas7', 
-      whatsapp: '9876543211', 
+      whatsapp: '7569913989', 
       images: [tri1, tri2, tri3, tri4],
       neighborhood: ['🏢 5 mins to Financial District', '☕ 2 mins to Starbucks'],
       sharingOptions: [
-        { type: 'Single Room', price: '₹15,000' },
-        { type: 'Two Sharing', price: '₹8,500' },
-        { type: 'Three Sharing', price: '₹6,500' }
+        { type: 'Single Room', priceNonAC: '₹15,000', priceAC: '₹17,000' },
+        { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
+        { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
+        { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
       ]
     }
   ],
@@ -70,13 +71,14 @@ const CAMPUS_DATA = {
       tagline: 'Secure Women\'s PG',
       location: 'Ayyappa Society, Mega Hills, Madhapur, Hyderabad',
       mapLink: 'https://maps.app.goo.gl/aEGCvCFps7VJvMhb6', 
-      whatsapp: '9876543212', 
+      whatsapp: '7569913989', 
       images: [sindhoor1, sindhoor2, sindhoor3, sindhoor4], 
       neighborhood: ['🛒 2 mins to Ratnadeep Supermarket', '🚇 8 mins to Madhapur Metro'],
       sharingOptions: [
-       { type: 'Single Room', price: '₹15,000' },
-       { type: 'Two Sharing', price: '₹8,500' },
-       { type: 'Three Sharing', price: '₹6,500' }
+       { type: 'Single Room', priceNonAC: '₹15,000', priceAC: '₹17,000' },
+       { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
+       { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
+       { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
       ]
     },
     {
@@ -85,20 +87,21 @@ const CAMPUS_DATA = {
       tagline: 'Secure Women\'s PG',
       location: 'Rai Durg, Hyderabad',
       mapLink: 'https://maps.app.goo.gl/jWMHjRkthCGGvorq9', 
-      whatsapp: '9876543213', 
+      whatsapp: '7569913989', 
       images: [skanda1, skanda2, skanda3, skanda4, skanda5, skanda6], 
       neighborhood: ['🏢 5 mins to Knowledge City', '🏥 3 mins to Care Hospitals'],
       sharingOptions: [
-       { type: 'Single Room', price: '₹15,000' },
-       { type: 'Two Sharing', price: '₹8,500' },
-       { type: 'Three Sharing', price: '₹6,500' }
+       { type: 'Single Room', priceNonAC: '₹15,000', priceAC: '₹17,000' },
+       { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
+       { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
+       { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
       ]
     }
   ]
 };
 
 const FAQ_DATA = [
-  { question: 'What is included in the monthly rent?', answer: 'Your monthly rent is all-inclusive. It covers your fully furnished room, 3 times daily homestyle meals, high-speed Wi-Fi, daily housekeeping, and 24/7 security.' },
+  { question: 'What is included in the monthly rent?', answer: 'Your monthly rent covers your fully furnished room, 3 times daily homestyle meals, high-speed Wi-Fi, daily housekeeping, and 24/7 security. AC options include dedicated air conditioning for your room.' },
   { question: 'Is there a security deposit?', answer: 'Yes, we require a standard 1-month security deposit at the time of booking. This is fully refundable at the end of your stay, provided a 30-day notice is given.' },
   { question: 'What are the timing restrictions?', answer: 'As a premium PG for working professionals, there are no restrictive curfews. However, biometric access is strictly monitored 24/7 for your safety.' },
   { question: 'Are the Men\'s and Women\'s campuses entirely separate?', answer: 'Absolutely. Our campuses are strictly independent buildings in different locations to ensure complete privacy, comfort, and top-tier security for all residents.' }
@@ -129,8 +132,6 @@ function CampusCard({ campus, gender, openLightbox }) {
       viewport={{ once: true, margin: "-50px" }}
       className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-start bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-stone-200/50"
     >
-      
-      {/* LEFT: INTERACTIVE IMAGE GALLERY */}
       <div className="w-full lg:w-1/2 flex flex-col gap-3">
         <div 
           className="w-full h-[300px] sm:h-[450px] bg-stone-100 rounded-[1.5rem] overflow-hidden relative cursor-zoom-in group"
@@ -165,7 +166,6 @@ function CampusCard({ campus, gender, openLightbox }) {
         </div>
       </div>
 
-      {/* RIGHT: CONTENT & PRICING */}
       <div className="w-full lg:w-1/2 pt-4">
         <span className={`inline-block px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full ${
           isMen ? 'bg-slate-100 text-slate-700' : 'bg-rose-50 text-rose-700'
@@ -194,11 +194,24 @@ function CampusCard({ campus, gender, openLightbox }) {
         <hr className="my-8 border-stone-100" />
 
         <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Monthly Leasing Structure</h4>
-        <div className="space-y-5 mb-10">
+        <div className="space-y-4 mb-10">
           {campus.sharingOptions.map((option, i) => (
-            <div key={i} className="flex justify-between items-end border-b border-stone-100 pb-3 group">
+            <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-stone-100 pb-3 gap-3 group">
               <span className="text-sm font-semibold text-stone-600">{option.type}</span>
-              <span className="text-xl font-black text-stone-900">{option.price}</span>
+              
+              <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">Non-AC</span>
+                  <span className="text-lg font-black text-stone-700">{option.priceNonAC}</span>
+                </div>
+                
+                <div className="w-px h-6 bg-stone-200"></div>
+                
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">AC</span>
+                  <span className="text-lg font-black text-stone-900">{option.priceAC}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -216,7 +229,6 @@ function CampusCard({ campus, gender, openLightbox }) {
     </motion.div>
   );
 }
-
 
 // --- MAIN APP COMPONENT ---
 export default function App() {
@@ -272,18 +284,15 @@ export default function App() {
         initial={{ y: -100 }} animate={{ y: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-sm"
       >
-        {/* Tier 1: Fraud Alert Ticker */}
         <div className="bg-stone-900 text-amber-500 overflow-hidden py-2 flex items-center relative w-full border-b border-stone-800">
           <div className="animate-marquee text-[9px] sm:text-[10px] font-black uppercase tracking-widest inline-block whitespace-nowrap cursor-default">
             🚨 OFFICIAL NOTICE: Beware of fraudulent websites or individuals asking for booking amounts. This is the ONLY official Nandu PG website. We do not accept advance payments through unauthorized third-party portals. 🚨
           </div>
         </div>
 
-        {/* Tier 2: Main Glass Navigation */}
         <div className="bg-[#F5F5F0]/90 backdrop-blur-xl border-b border-stone-200/60 px-3 sm:px-6 py-3 sm:py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
             
-            {/* BRAND LOCKUP */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 cursor-pointer group shrink" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
               <div className="flex items-center justify-center h-9 w-9 sm:h-12 sm:w-12 bg-white rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.03)] border border-stone-100 shrink-0 transition-transform duration-300 group-hover:scale-105">
                 <img src="/nandu-logo.svg" alt="Nandu PG" className="h-5 w-5 sm:h-8 sm:w-8 object-contain" />
@@ -310,8 +319,13 @@ export default function App() {
         </div>
       </motion.header>
 
-      {/* --- HERO SECTION --- */}
-      <motion.section initial="hidden" animate="visible" variants={fadeUpVariant} className="relative h-[70vh] min-h-[500px] flex items-center justify-center px-6 mt-20 sm:mt-24 rounded-b-[3rem] overflow-hidden mx-2 sm:mx-6 shadow-sm">
+      {/* --- HERO SECTION (FLOATING CARD DESIGN) --- */}
+      <motion.section 
+        initial="hidden" 
+        animate="visible" 
+        variants={fadeUpVariant} 
+        className="relative h-[70vh] min-h-[500px] flex items-center justify-center px-6 mt-[130px] lg:mt-[140px] rounded-[2rem] sm:rounded-[3rem] overflow-hidden mx-4 sm:mx-8 shadow-2xl border border-stone-200/50"
+      >
         <div className="absolute inset-0 z-0">
           <img src={mainImg} alt="Premium Building" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-b from-stone-900/60 via-stone-900/40 to-stone-900/80 mix-blend-multiply"></div>
@@ -350,7 +364,7 @@ export default function App() {
       </section>
 
       {/* --- TESTIMONIAL CAROUSEL --- */}
-      <section className="bg-stone-900 py-24 px-6 mx-2 sm:mx-6 rounded-[3rem] mb-16 overflow-hidden">
+      <section className="bg-stone-900 py-24 px-6 mx-4 sm:mx-8 rounded-[2rem] sm:rounded-[3rem] mb-16 overflow-hidden shadow-2xl">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter mb-16 text-center text-white">Resident Experiences</h2>
           <div className="flex gap-6 overflow-x-auto pb-10 scrollbar-hide snap-x">
@@ -396,8 +410,8 @@ export default function App() {
         </div>
       </section>
 
-      {/* --- FOOTER --- */}
-      <footer className="bg-stone-950 text-stone-300 py-20 px-6 rounded-t-[3rem] mx-2 sm:mx-6 shadow-2xl">
+      {/* --- FOOTER (FLOATING CARD DESIGN) --- */}
+      <footer className="bg-stone-950 text-stone-300 py-16 sm:py-20 px-6 rounded-[2rem] sm:rounded-[3rem] mx-4 sm:mx-8 mb-6 sm:mb-8 shadow-2xl border border-stone-800">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8 mb-16">
           <div className="md:col-span-5 flex flex-col items-start">
             <div className="flex items-center gap-3 mb-6 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
