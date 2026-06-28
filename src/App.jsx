@@ -45,7 +45,8 @@ const CAMPUS_DATA = {
         { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
         { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
         { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
-      ]
+      ],
+      dailyPricing: { priceNonAC: '₹500', priceAC: '₹800' }
     },
     {
       id: 'trinetra',
@@ -61,7 +62,8 @@ const CAMPUS_DATA = {
         { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
         { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
         { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
-      ]
+      ],
+      dailyPricing: { priceNonAC: '₹500', priceAC: '₹800' }
     }
   ],
   women: [
@@ -79,7 +81,8 @@ const CAMPUS_DATA = {
        { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
        { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
        { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
-      ]
+      ],
+      dailyPricing: { priceNonAC: '₹500', priceAC: '₹800' }
     },
     {
       id: 'skanda',
@@ -95,14 +98,15 @@ const CAMPUS_DATA = {
        { type: 'Two Sharing', priceNonAC: '₹8,500', priceAC: '₹10,500' },
        { type: 'Three Sharing', priceNonAC: '₹6,500', priceAC: '₹8,500' },
        { type: 'Four Sharing', priceNonAC: '₹5,500', priceAC: '₹7,500' }
-      ]
+      ],
+      dailyPricing: { priceNonAC: '₹500', priceAC: '₹800' }
     }
   ]
 };
 
 const FAQ_DATA = [
   { question: 'What is included in the monthly rent?', answer: 'Your monthly rent covers your fully furnished room, 3 times daily homestyle meals, high-speed Wi-Fi, daily housekeeping, and 24/7 security. AC options include dedicated air conditioning for your room.' },
-  { question: 'Is there a security deposit?', answer: 'Yes, we require a standard 1-month security deposit at the time of booking. This is fully refundable at the end of your stay, provided a 30-day notice is given.' },
+  { question: 'Is there a security deposit?', answer: 'Yes, we require a standard 1-month security deposit at the time of booking. This is fully refundable at the end of your stay, provided a 30-day notice is given. (Daily stays do not require a standard month deposit).' },
   { question: 'What are the timing restrictions?', answer: 'As a premium PG for working professionals, there are no restrictive curfews. However, biometric access is strictly monitored 24/7 for your safety.' },
   { question: 'Are the Men\'s and Women\'s campuses entirely separate?', answer: 'Absolutely. Our campuses are strictly independent buildings in different locations to ensure complete privacy, comfort, and top-tier security for all residents.' }
 ];
@@ -193,8 +197,9 @@ function CampusCard({ campus, gender, openLightbox }) {
 
         <hr className="my-8 border-stone-100" />
 
-        <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Monthly Leasing Structure</h4>
-        <div className="space-y-4 mb-10">
+        <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Leasing Structure</h4>
+        
+        <div className="space-y-4 mb-4">
           {campus.sharingOptions.map((option, i) => (
             <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-stone-100 pb-3 gap-3 group">
               <span className="text-sm font-semibold text-stone-600">{option.type}</span>
@@ -215,6 +220,31 @@ function CampusCard({ campus, gender, openLightbox }) {
             </div>
           ))}
         </div>
+
+        {/* --- DAILY PRICING BLOCK --- */}
+        {campus.dailyPricing && (
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-stone-50 p-4 rounded-xl border border-stone-200 mb-10">
+            <div>
+              <span className="block text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">Flexible Stay</span>
+              <span className="text-sm font-semibold text-stone-700">Daily Basis Available</span>
+            </div>
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-end mt-3 sm:mt-0">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">Non-AC</span>
+                <span className="text-base font-black text-stone-700">
+                  {campus.dailyPricing.priceNonAC}<span className="text-xs font-normal text-stone-500">/day</span>
+                </span>
+              </div>
+              <div className="w-px h-6 bg-stone-200"></div>
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">AC</span>
+                <span className="text-base font-black text-stone-900">
+                  {campus.dailyPricing.priceAC}<span className="text-xs font-normal text-stone-500">/day</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <a 
           href={`https://wa.me/${campus.whatsapp}?text=Hi!%20I'm%20inquiring%20about%20${encodeURIComponent(campus.name)}.`}
