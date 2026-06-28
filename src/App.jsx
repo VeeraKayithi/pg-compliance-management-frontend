@@ -119,8 +119,8 @@ const TESTIMONIALS = [
 
 // --- ANIMATION VARIANTS ---
 const fadeUpVariant = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
 };
 
 // --- CUSTOM INTERACTIVE CAMPUS CARD ---
@@ -134,11 +134,11 @@ function CampusCard({ campus, gender, openLightbox }) {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-50px" }}
-      className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-start bg-white p-6 sm:p-10 rounded-[2.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] border border-stone-200/50"
+      className="flex flex-col lg:flex-row gap-6 lg:gap-10 bg-white p-5 sm:p-8 rounded-[2rem] shadow-[0_15px_35px_-15px_rgba(0,0,0,0.05)] border border-stone-200/60"
     >
       <div className="w-full lg:w-1/2 flex flex-col gap-3">
         <div 
-          className="w-full h-[300px] sm:h-[450px] bg-stone-100 rounded-[1.5rem] overflow-hidden relative cursor-zoom-in group"
+          className="w-full h-[260px] sm:h-[340px] bg-stone-100 rounded-[1.25rem] overflow-hidden relative cursor-zoom-in group"
           onClick={() => openLightbox(activeImage)}
         >
           <img 
@@ -147,18 +147,18 @@ function CampusCard({ campus, gender, openLightbox }) {
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-            <span className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-stone-900 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-opacity shadow-lg">
+            <span className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-stone-900 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-opacity shadow-lg">
               Expand Image
             </span>
           </div>
         </div>
         
-        <div className="flex gap-3 overflow-x-auto pb-2 pt-2 scrollbar-hide snap-x">
+        <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide snap-x">
           {campus.images.map((img, i) => (
             <button 
               key={i} 
               onClick={() => setActiveImage(img)}
-              className={`relative h-20 w-24 sm:h-24 sm:w-32 shrink-0 snap-start rounded-2xl overflow-hidden transition-all duration-300 ${
+              className={`relative h-16 w-20 sm:h-20 sm:w-28 shrink-0 snap-start rounded-xl overflow-hidden transition-all duration-300 ${
                 activeImage === img 
                   ? (isMen ? 'ring-2 ring-slate-800 ring-offset-2 opacity-100' : 'ring-2 ring-rose-800 ring-offset-2 opacity-100') 
                   : 'opacity-50 hover:opacity-100'
@@ -170,51 +170,51 @@ function CampusCard({ campus, gender, openLightbox }) {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/2 pt-4">
-        <span className={`inline-block px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full ${
-          isMen ? 'bg-slate-100 text-slate-700' : 'bg-rose-50 text-rose-700'
-        }`}>
-          {campus.tagline}
-        </span>
-        <h3 className="text-3xl sm:text-5xl font-black text-stone-900 mt-5 tracking-tighter">{campus.name}</h3>
+      <div className="w-full lg:w-1/2 flex flex-col justify-center">
+        <div className="flex items-center justify-between gap-2">
+          <span className={`inline-block px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full ${
+            isMen ? 'bg-slate-100 text-slate-700' : 'bg-rose-50 text-rose-700'
+          }`}>
+            {campus.tagline}
+          </span>
+          {campus.mapLink !== '#' && (
+            <a href={campus.mapLink} target="_blank" rel="noreferrer" className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest transition-colors px-2 py-1 rounded-full ${isMen ? 'text-slate-500 hover:bg-slate-50' : 'text-rose-500 hover:bg-rose-50'}`}>
+              📍 Map
+            </a>
+          )}
+        </div>
         
-        <div className="mt-5 flex flex-wrap gap-2">
+        <h3 className="text-2xl sm:text-4xl font-black text-stone-900 mt-3 tracking-tighter leading-none">{campus.name}</h3>
+        <p className="text-xs text-stone-500 font-medium mt-1">{campus.location}</p>
+        
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {campus.neighborhood.map((perk, idx) => (
-            <span key={idx} className="px-3 py-1.5 bg-stone-50 border border-stone-200 text-stone-600 text-[10px] font-bold rounded-lg shadow-sm">
+            <span key={idx} className="px-2.5 py-1 bg-stone-50 border border-stone-200 text-stone-600 text-[9px] font-bold rounded-md shadow-sm">
               {perk}
             </span>
           ))}
         </div>
 
-        <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3">
-          <p className="text-sm text-stone-500 font-medium">{campus.location}</p>
-          {campus.mapLink !== '#' && (
-            <a href={campus.mapLink} target="_blank" rel="noreferrer" className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest transition-colors px-3 py-1.5 rounded-full w-fit ${isMen ? 'text-slate-600 hover:bg-slate-50' : 'text-rose-600 hover:bg-rose-50'}`}>
-              📍 View Map
-            </a>
-          )}
-        </div>
+        <hr className="my-5 border-stone-100" />
 
-        <hr className="my-8 border-stone-100" />
-
-        <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-6">Leasing Structure</h4>
+        <h4 className="text-[9px] font-bold uppercase tracking-widest text-stone-400 mb-3">Leasing Structure</h4>
         
-        <div className="space-y-4 mb-4">
+        <div className="space-y-2 mb-4">
           {campus.sharingOptions.map((option, i) => (
-            <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-stone-100 pb-3 gap-3 group">
-              <span className="text-sm font-semibold text-stone-600">{option.type}</span>
+            <div key={i} className="flex justify-between items-center border-b border-stone-50 pb-2 gap-2 group">
+              <span className="text-xs font-semibold text-stone-600">{option.type}</span>
               
-              <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+              <div className="flex items-center gap-3">
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">Non-AC</span>
-                  <span className="text-lg font-black text-stone-700">{option.priceNonAC}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Non-AC</span>
+                  <span className="text-sm font-black text-stone-700 leading-none">{option.priceNonAC}</span>
                 </div>
                 
-                <div className="w-px h-6 bg-stone-200"></div>
+                <div className="w-px h-5 bg-stone-200"></div>
                 
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">AC</span>
-                  <span className="text-lg font-black text-stone-900">{option.priceAC}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-blue-400">AC</span>
+                  <span className="text-sm font-black text-stone-900 leading-none">{option.priceAC}</span>
                 </div>
               </div>
             </div>
@@ -223,23 +223,23 @@ function CampusCard({ campus, gender, openLightbox }) {
 
         {/* --- DAILY PRICING BLOCK --- */}
         {campus.dailyPricing && (
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-stone-50 p-4 rounded-xl border border-stone-200 mb-10">
+          <div className="flex justify-between items-center bg-stone-50 py-2.5 px-4 rounded-lg border border-stone-100 mb-5">
             <div>
-              <span className="block text-[10px] font-bold uppercase tracking-widest text-emerald-600 mb-1">Flexible Stay</span>
-              <span className="text-sm font-semibold text-stone-700">Daily Basis Available</span>
+              <span className="block text-[9px] font-bold uppercase tracking-widest text-emerald-600 mb-0.5">Flexible Stay</span>
+              <span className="text-xs font-semibold text-stone-700">Daily Basis</span>
             </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto justify-end mt-3 sm:mt-0">
+            <div className="flex items-center gap-3">
               <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-stone-400">Non-AC</span>
-                <span className="text-base font-black text-stone-700">
-                  {campus.dailyPricing.priceNonAC}<span className="text-xs font-normal text-stone-500">/day</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Non-AC</span>
+                <span className="text-sm font-black text-stone-700 leading-none">
+                  {campus.dailyPricing.priceNonAC}<span className="text-[9px] font-normal text-stone-500">/day</span>
                 </span>
               </div>
-              <div className="w-px h-6 bg-stone-200"></div>
+              <div className="w-px h-5 bg-stone-200"></div>
               <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-400">AC</span>
-                <span className="text-base font-black text-stone-900">
-                  {campus.dailyPricing.priceAC}<span className="text-xs font-normal text-stone-500">/day</span>
+                <span className="text-[8px] font-bold uppercase tracking-widest text-blue-400">AC</span>
+                <span className="text-sm font-black text-stone-900 leading-none">
+                  {campus.dailyPricing.priceAC}<span className="text-[9px] font-normal text-stone-500">/day</span>
                 </span>
               </div>
             </div>
@@ -249,8 +249,8 @@ function CampusCard({ campus, gender, openLightbox }) {
         <a 
           href={`https://wa.me/${campus.whatsapp}?text=Hi!%20I'm%20inquiring%20about%20${encodeURIComponent(campus.name)}.`}
           target="_blank" rel="noreferrer"
-          className={`inline-flex w-full sm:w-auto px-10 py-4 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all justify-center active:scale-95 shadow-md ${
-            isMen ? 'bg-slate-800 hover:bg-slate-900 shadow-slate-900/20' : 'bg-rose-800 hover:bg-rose-900 shadow-rose-900/20'
+          className={`inline-flex w-full px-6 py-3 text-white text-[10px] font-bold uppercase tracking-widest rounded-full transition-all justify-center active:scale-95 shadow-sm mt-auto ${
+            isMen ? 'bg-slate-800 hover:bg-slate-900' : 'bg-rose-800 hover:bg-rose-900'
           }`}
         >
           Check Availability
@@ -387,7 +387,7 @@ export default function App() {
       </motion.section>
 
       {/* --- CAMPUS LIST --- */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-24 space-y-16">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-24 space-y-10">
         {currentCampuses.map((campus) => (
           <CampusCard key={campus.id} campus={campus} gender={genderTab} openLightbox={setLightboxImg} />
         ))}
