@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import axios from "axios";
+
+import { logoutUser, saveAuthentication, } from "../services/authService.js";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:8080/api/v1";
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -13,7 +22,10 @@ export default function Login() {
     event.preventDefault();
     setError("");
 
-    if (!username.trim() || !password.trim()) {
+    const normalizedUsername = username.trim();
+    const normalizedPassword = password.trim();
+
+    if (!normalizedUsername || !normalizedPassword) {
       setError("Please enter both username and password.");
       return;
     }
@@ -21,15 +33,74 @@ export default function Login() {
     try {
       setIsLoading(true);
 
-      // Backend login integration will be added here.
-      console.log({
-        username: username.trim(),
-        password,
-      });
-    } catch (loginError) {
-      setError(
-        "Unable to sign in. Please verify your username and password."
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/login`,
+        {
+          username: normalizedUsername,
+          password,
+        }
       );
+
+      const authData = response.data;
+
+      if (!authData?.token || !authData?.role) {
+        throw new Error(
+          "Invalid authentication response received from the server."
+        );
+      }
+
+      saveAuthentication(authData);
+
+      const normalizedRole =
+        authData.role.toUpperCase();
+
+      if (normalizedRole === "ADMIN") {
+        navigate("/admin/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      if (normalizedRole === "TENANT") {
+        navigate("/tenant/dashboard", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      logoutUser();
+
+      setError(
+        "Your account does not have a supported role."
+      );
+    } catch (loginError) {
+      console.error("Login error:", loginError);
+
+      const backendMessage =
+        loginError.response?.data?.message;
+
+      if (!loginError.response) {
+        setError(
+          "Unable to connect to the server. Please verify that the backend is running."
+        );
+      } else if (loginError.response.status === 401) {
+        setError(
+          backendMessage ||
+          "Invalid username or password."
+        );
+      } else if (loginError.response.status === 403) {
+        setError(
+          backendMessage ||
+          "Your account is not allowed to sign in."
+        );
+      } else {
+        setError(
+          backendMessage ||
+          "Unable to sign in. Please try again."
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -105,9 +176,10 @@ export default function Login() {
                 type="text"
                 autoComplete="username"
                 value={username}
+                disabled={isLoading}
                 onChange={(event) => setUsername(event.target.value)}
                 placeholder="Enter your username"
-                className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3.5 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500 focus:bg-white focus:ring-4 focus:ring-stone-100"
+                className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3.5 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500 focus:bg-white focus:ring-4 focus:ring-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
               />
             </div>
 
@@ -126,15 +198,17 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   value={password}
+                  disabled={isLoading}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3.5 pr-20 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500 focus:bg-white focus:ring-4 focus:ring-stone-100"
+                  className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3.5 pr-20 text-sm text-stone-900 outline-none transition placeholder:text-stone-400 focus:border-stone-500 focus:bg-white focus:ring-4 focus:ring-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
                 />
 
                 <button
                   type="button"
-                  onClick={() => setShowPassword((currentValue) => !currentValue)}
-                  className="absolute inset-y-0 right-0 px-4 text-[9px] font-black uppercase tracking-widest text-stone-500 transition-colors hover:text-stone-900"
+                  disabled={isLoading}
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute inset-y-0 right-0 px-4 text-[9px] font-black uppercase tracking-widest text-stone-500 transition-colors hover:text-stone-900 disabled:cursor-not-allowed disabled:opacity-60"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? "Hide" : "Show"}
