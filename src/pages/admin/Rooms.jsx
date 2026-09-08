@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
@@ -6,6 +6,7 @@ import ActionButton from "../../components/admin/ActionButton.jsx";
 import PremiumSelect from "../../components/admin/PremiumSelect.jsx";
 import { getAllBuildings } from "../../services/buildingService.js";
 import { createRoom, deleteRoom, getAllRooms, updateRoom } from "../../services/roomService.js";
+import useAutoDismiss from "../../hooks/useAutoDismiss.js";
 
 const EMPTY_FORM = { buildingId: "", roomNumber: "", sharingType: "SINGLE", roomStatus: "AVAILABLE" };
 const SHARING_OPTIONS = ["SINGLE", "DOUBLE", "TRIPLE", "FOUR"].map((value) => ({ value, label: `${value.charAt(0)}${value.slice(1).toLowerCase()} Sharing` }));
@@ -24,6 +25,17 @@ export default function Rooms() {
   const [processingId, setProcessingId] = useState(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const clearError = useCallback(() => {
+    setError("");
+  }, []);
+
+  const clearMessage = useCallback(() => {
+    setMessage("");
+  }, []);
+
+  useAutoDismiss(error, clearError, 4000);
+  useAutoDismiss(message, clearMessage, 4000);
 
   const load = async () => {
     try {

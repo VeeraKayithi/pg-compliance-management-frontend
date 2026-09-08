@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import ActionButton from "../../components/admin/ActionButton.jsx";
 import PremiumSelect from "../../components/admin/PremiumSelect.jsx";
-import {
-  createBuilding,
-  deleteBuilding,
-  getAllBuildings,
-  updateBuilding,
-} from "../../services/buildingService.js";
+import { createBuilding, deleteBuilding, getAllBuildings, updateBuilding, } from "../../services/buildingService.js";
+import useAutoDismiss from "../../hooks/useAutoDismiss.js";
 
 const EMPTY_FORM = {
   buildingName: "",
@@ -40,6 +36,17 @@ export default function Buildings() {
   const [processingId, setProcessingId] = useState(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const clearError = useCallback(() => {
+    setError("");
+  }, []);
+
+  const clearMessage = useCallback(() => {
+    setMessage("");
+  }, []);
+
+  useAutoDismiss(error, clearError, 4000);
+  useAutoDismiss(message, clearMessage, 4000);
 
   const loadBuildings = async () => {
     try {

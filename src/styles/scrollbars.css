@@ -1,0 +1,114 @@
+:root {
+  scrollbar-color: #78716c #f5f5f0;
+  scrollbar-width: thin;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a8a29e transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-track {
+  background: #f5f5f0;
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 44px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-color: #a8a29e;
+  background-clip: padding-box;
+  transition: background-color 180ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #57534e;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: #1c1917;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.app-scrollbar-horizontal {
+  scrollbar-width: thin;
+  scrollbar-color: #a8a29e transparent;
+}
+
+.app-scrollbar-horizontal::-webkit-scrollbar {
+  height: 7px;
+}
+
+.app-scrollbar-horizontal::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background-color: #a8a29e;
+  background-clip: padding-box;
+}
+
+.app-scrollbar-horizontal::-webkit-scrollbar-thumb:hover {
+  background-color: #57534e;
+}
+
+::view-transition-old(root) {
+  animation: nandu-page-out 160ms ease-in both;
+}
+
+::view-transition-new(root) {
+  animation: nandu-page-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes nandu-page-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.995);
+  }
+}
+
+@keyframes nandu-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 1ms;
+  }
+}

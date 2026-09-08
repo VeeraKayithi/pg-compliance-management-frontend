@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import { getAllBuildings } from "../../services/buildingService.js";
 import { getAllRooms } from "../../services/roomService.js";
 import { getAllTenants } from "../../services/tenantService.js";
+import useAutoDismiss from "../../hooks/useAutoDismiss.js";
 
 const CAPACITY = { SINGLE: 1, DOUBLE: 2, TRIPLE: 3, FOUR: 4 };
 const id = (value) => String(value ?? "");
@@ -17,6 +18,12 @@ export default function AdminDashboard() {
   const [selectedRoomId, setSelectedRoomId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const clearError = useCallback(() => {
+    setError("");
+  }, []);
+
+  useAutoDismiss(error, clearError, 4000);
 
   const load = async () => {
     try {
@@ -102,7 +109,7 @@ export default function AdminDashboard() {
             <button onClick={load} disabled={loading} className="rounded-full border border-stone-300 px-4 py-2 text-[8px] font-bold uppercase tracking-widest">Refresh</button>
           </div>
 
-          <div className="mt-5 flex gap-3 overflow-x-auto pb-2">
+          <div className="mt-5 flex gap-3 overflow-x-auto pb-2 app-scrollbar-horizontal">
             {buildings.map((building) => {
               const selected = id(building.buildingId) === id(selectedBuildingId);
               return (

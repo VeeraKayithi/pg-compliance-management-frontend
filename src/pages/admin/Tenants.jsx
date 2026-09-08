@@ -1,22 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
 import AdminHeader from "../../components/admin/AdminHeader.jsx";
 import PremiumSelect from "../../components/admin/PremiumSelect.jsx";
 import { getAllBuildings } from "../../services/buildingService.js";
 import { getAllRooms } from "../../services/roomService.js";
-import {
-  createTenant,
-  getAllTenants,
-  markTenantAsLeft,
-  updateTenant,
-} from "../../services/tenantService.js";
+import { createTenant, getAllTenants, markTenantAsLeft, updateTenant, } from "../../services/tenantService.js";
+import useAutoDismiss from "../../hooks/useAutoDismiss.js";
+import { createTenantAccount } from "../../services/userService.js";
 
 const EMPTY_FORM = {
   name: "",
   mobileNumber: "",
   email: "",
+  buildingId: "",
   roomId: "",
+  createPortalAccount: true,
+  temporaryUsername: "",
+  temporaryPassword: "",
+  confirmTemporaryPassword: "",
 };
 
 const INPUT_CLASS =
@@ -59,6 +61,26 @@ export default function Tenants() {
   const [processingTenantId, setProcessingTenantId] = useState(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [onboardingResult, setOnboardingResult] = useState(null);
+  const [accountRecovery, setAccountRecovery] = useState(null);
+  const [isCopying, setIsCopying] = useState(false);
+
+  const clearError = useCallback(() => {
+    setError("");
+  }, []);
+
+  const clearSuccessMessage = useCallback(() => {
+    setSuccessMessage("");
+  }, []);
+
+  useAutoDismiss(error, clearError, 4000);
+
+  useAutoDismiss(
+    successMessage,
+    clearSuccessMessage,
+    4000
+  );
+
 
   const loadData = async () => {
     try {
@@ -126,13 +148,33 @@ export default function Tenants() {
     [roomsForSelectedBuilding]
   );
 
+  const formBuildingOptions = useMemo(
+    () =>
+      buildings.map((building) => ({
+        value: building.buildingId,
+        label: building.buildingName,
+      })),
+    [buildings]
+  );
+
+  const formRooms = useMemo(() => {
+    if (!formData.buildingId) {
+      return [];
+    }
+
+    return rooms.filter(
+      (room) =>
+        String(room.buildingId) === String(formData.buildingId)
+    );
+  }, [rooms, formData.buildingId]);
+
   const assignRoomOptions = useMemo(
     () =>
-      rooms.map((room) => ({
+      formRooms.map((room) => ({
         value: room.roomId,
-        label: `${room.buildingName} · Room ${room.roomNumber} · ${room.roomStatus}`,
+        label: `Room ${room.roomNumber} · ${room.sharingType} · ${room.roomStatus}`,
       })),
-    [rooms]
+    [formRooms]
   );
 
   const visibleTenants = useMemo(() => {
@@ -163,32 +205,51 @@ export default function Tenants() {
   };
 
   const handleFormChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value, type, checked } = event.target;
 
-    setFormData((currentForm) => ({
-      ...currentForm,
-      [name]: value,
-    }));
+    setFormData((currentForm) => {
+      const nextValue = type === "checkbox" ? checked : value;
+      const nextForm = {
+        ...currentForm,
+        [name]: nextValue,
+      };
+
+      if (
+        name === "mobileNumber" &&
+        (!currentForm.temporaryUsername ||
+          currentForm.temporaryUsername === currentForm.mobileNumber)
+      ) {
+        nextForm.temporaryUsername = value;
+      }
+
+      return nextForm;
+    });
   };
 
   const openCreateForm = () => {
     setEditingTenantId(null);
-    setFormData({
-      ...EMPTY_FORM,
-      roomId: rooms[0]?.roomId || "",
-    });
+    setFormData(EMPTY_FORM);
     setError("");
     setSuccessMessage("");
     setIsFormOpen(true);
   };
 
   const openEditForm = (tenant) => {
+    const tenantRoom = rooms.find(
+      (room) => String(room.roomId) === String(tenant.roomId)
+    );
+
     setEditingTenantId(tenant.tenantId);
     setFormData({
       name: tenant.name || "",
       mobileNumber: tenant.mobileNumber || "",
       email: tenant.email || "",
+      buildingId: tenantRoom?.buildingId || "",
       roomId: tenant.roomId || "",
+      createPortalAccount: false,
+      temporaryUsername: "",
+      temporaryPassword: "",
+      confirmTemporaryPassword: "",
     });
     setError("");
     setSuccessMessage("");
@@ -210,27 +271,122 @@ export default function Tenants() {
     setError("");
     setSuccessMessage("");
 
-    const payload = {
+    const tenantPayload = {
       name: formData.name.trim(),
       mobileNumber: formData.mobileNumber.trim(),
       email: formData.email.trim(),
       roomId: Number(formData.roomId),
     };
 
-    if (!payload.name || !payload.mobileNumber || !payload.roomId) {
-      setError("Tenant name, mobile number, and room are required.");
+    if (
+      !tenantPayload.name ||
+      !tenantPayload.mobileNumber ||
+      !formData.buildingId ||
+      !tenantPayload.roomId
+    ) {
+      setError(
+        "Tenant name, mobile number, building, and room are required."
+      );
       return;
+    }
+
+    if (
+      !editingTenantId &&
+      formData.createPortalAccount
+    ) {
+      if (
+        !formData.temporaryUsername.trim() ||
+        !formData.temporaryPassword
+      ) {
+        setError(
+          "Temporary username and password are required for portal access."
+        );
+        return;
+      }
+
+      if (formData.temporaryPassword.length < 8) {
+        setError(
+          "Temporary password must contain at least 8 characters."
+        );
+        return;
+      }
+
+      if (
+        formData.temporaryPassword !==
+        formData.confirmTemporaryPassword
+      ) {
+        setError("Temporary passwords do not match.");
+        return;
+      }
     }
 
     try {
       setIsSaving(true);
 
       if (editingTenantId) {
-        await updateTenant(editingTenantId, payload);
+        await updateTenant(editingTenantId, tenantPayload);
         setSuccessMessage("Tenant updated successfully.");
-      } else {
-        await createTenant(payload);
+        setIsFormOpen(false);
+        setEditingTenantId(null);
+        setFormData(EMPTY_FORM);
+        await loadData();
+        return;
+      }
+
+      const createdTenant = await createTenant(tenantPayload);
+
+      if (!formData.createPortalAccount) {
         setSuccessMessage("Tenant added successfully.");
+        setIsFormOpen(false);
+        setFormData(EMPTY_FORM);
+        await loadData();
+        return;
+      }
+
+      const accountPayload = {
+        tenantId: createdTenant.tenantId,
+        username: formData.temporaryUsername.trim(),
+        temporaryPassword: formData.temporaryPassword,
+      };
+
+      try {
+        await createTenantAccount(accountPayload);
+
+        const selectedRoom = rooms.find(
+          (room) =>
+            String(room.roomId) ===
+            String(createdTenant.roomId || tenantPayload.roomId)
+        );
+
+        setOnboardingResult({
+          tenantName: createdTenant.name,
+          buildingName:
+            selectedRoom?.buildingName || "Not available",
+          roomNumber:
+            selectedRoom?.roomNumber ||
+            createdTenant.roomNumber ||
+            "Not available",
+          username: accountPayload.username,
+          temporaryPassword: accountPayload.temporaryPassword,
+        });
+
+        setSuccessMessage(
+          "Tenant and portal account created successfully."
+        );
+      } catch (accountError) {
+        setAccountRecovery({
+          tenantId: createdTenant.tenantId,
+          tenantName: createdTenant.name,
+          username: accountPayload.username,
+          temporaryPassword: accountPayload.temporaryPassword,
+        });
+
+        setError(
+          getErrorMessage(
+            accountError,
+            "Tenant was created, but portal account creation failed. Use Retry Account Creation."
+          )
+        );
       }
 
       setIsFormOpen(false);
@@ -238,9 +394,74 @@ export default function Tenants() {
       setFormData(EMPTY_FORM);
       await loadData();
     } catch (requestError) {
-      setError(getErrorMessage(requestError, "Unable to save tenant details."));
+      setError(
+        getErrorMessage(
+          requestError,
+          "Unable to create tenant details."
+        )
+      );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const retryAccountCreation = async () => {
+    if (!accountRecovery) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError("");
+
+      await createTenantAccount({
+        tenantId: accountRecovery.tenantId,
+        username: accountRecovery.username,
+        temporaryPassword: accountRecovery.temporaryPassword,
+      });
+
+      setOnboardingResult({
+        tenantName: accountRecovery.tenantName,
+        buildingName: "Already assigned",
+        roomNumber: "Already assigned",
+        username: accountRecovery.username,
+        temporaryPassword: accountRecovery.temporaryPassword,
+      });
+      setAccountRecovery(null);
+      setSuccessMessage("Portal account created successfully.");
+    } catch (requestError) {
+      setError(
+        getErrorMessage(
+          requestError,
+          "Unable to create the portal account."
+        )
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const copyCredentials = async () => {
+    if (!onboardingResult) {
+      return;
+    }
+
+    const credentialText = [
+      "Nandu PG Portal Credentials",
+      `Tenant: ${onboardingResult.tenantName}`,
+      `Username: ${onboardingResult.username}`,
+      `Temporary Password: ${onboardingResult.temporaryPassword}`,
+      "Login URL: /login",
+    ].join("\n");
+
+    try {
+      setIsCopying(true);
+      await navigator.clipboard.writeText(credentialText);
+      setSuccessMessage("Temporary credentials copied.");
+    } catch {
+      setError("Unable to copy credentials. Please copy them manually.");
+    } finally {
+      setIsCopying(false);
     }
   };
 
@@ -376,6 +597,30 @@ export default function Tenants() {
           </div>
         )}
 
+        {accountRecovery && (
+          <section className="mt-5 rounded-2xl border border-stone-300 bg-white p-5 shadow-sm">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-stone-400">
+              Portal Account Pending
+            </p>
+            <h2 className="mt-2 text-xl font-black tracking-tighter">
+              {accountRecovery.tenantName}
+            </h2>
+            <p className="mt-2 text-sm text-stone-500">
+              The tenant record exists, but portal access still needs to be created.
+            </p>
+            <motion.button
+              type="button"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={isSaving}
+              onClick={retryAccountCreation}
+              className="mt-4 rounded-full bg-stone-900 px-5 py-2.5 text-[8px] font-bold uppercase tracking-widest text-white disabled:opacity-50"
+            >
+              {isSaving ? "Creating..." : "Retry Account Creation"}
+            </motion.button>
+          </section>
+        )}
+
         {isLoading ? (
           <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
@@ -424,11 +669,10 @@ export default function Tenants() {
                   </div>
 
                   <span
-                    className={`rounded-full border px-3 py-1.5 text-[7px] font-bold uppercase tracking-widest ${
-                      tenant.tenantStatus === "ACTIVE"
+                    className={`rounded-full border px-3 py-1.5 text-[7px] font-bold uppercase tracking-widest ${tenant.tenantStatus === "ACTIVE"
                         ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                         : "border-stone-200 bg-stone-100 text-stone-600"
-                    }`}
+                      }`}
                   >
                     {tenant.tenantStatus}
                   </span>
@@ -554,6 +798,21 @@ export default function Tenants() {
               </label>
 
               <PremiumSelect
+                label="Building"
+                value={formData.buildingId}
+                options={formBuildingOptions}
+                onChange={(value) =>
+                  setFormData((current) => ({
+                    ...current,
+                    buildingId: value,
+                    roomId: "",
+                  }))
+                }
+                placeholder="Select a building"
+                disabled={buildings.length === 0}
+              />
+
+              <PremiumSelect
                 label="Assign Room"
                 value={formData.roomId}
                 options={assignRoomOptions}
@@ -563,9 +822,83 @@ export default function Tenants() {
                     roomId: value,
                   }))
                 }
-                placeholder="Select a room"
-                disabled={rooms.length === 0}
+                placeholder={
+                  formData.buildingId
+                    ? "Select a room"
+                    : "Select a building first"
+                }
+                disabled={!formData.buildingId || formRooms.length === 0}
               />
+
+              {!editingTenantId && (
+                <section className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
+                  <label className="flex cursor-pointer items-center justify-between gap-4">
+                    <div>
+                      <span className="block text-[9px] font-bold uppercase tracking-widest text-stone-500">
+                        Create Portal Account
+                      </span>
+                      <span className="mt-1 block text-xs text-stone-500">
+                        Create temporary login credentials for this tenant.
+                      </span>
+                    </div>
+                    <input
+                      name="createPortalAccount"
+                      type="checkbox"
+                      checked={formData.createPortalAccount}
+                      onChange={handleFormChange}
+                      className="h-5 w-5 accent-stone-900"
+                    />
+                  </label>
+
+                  {formData.createPortalAccount && (
+                    <div className="mt-5 space-y-4 border-t border-stone-200 pt-5">
+                      <label className="block">
+                        <span className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-stone-500">
+                          Temporary Username
+                        </span>
+                        <input
+                          name="temporaryUsername"
+                          value={formData.temporaryUsername}
+                          onChange={handleFormChange}
+                          placeholder="Defaults to mobile number"
+                          autoComplete="off"
+                          className={INPUT_CLASS}
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-stone-500">
+                          Temporary Password
+                        </span>
+                        <input
+                          name="temporaryPassword"
+                          type="password"
+                          value={formData.temporaryPassword}
+                          onChange={handleFormChange}
+                          placeholder="Minimum 8 characters"
+                          autoComplete="new-password"
+                          className={INPUT_CLASS}
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-stone-500">
+                          Confirm Temporary Password
+                        </span>
+                        <input
+                          name="confirmTemporaryPassword"
+                          type="password"
+                          value={formData.confirmTemporaryPassword}
+                          onChange={handleFormChange}
+                          placeholder="Re-enter temporary password"
+                          autoComplete="new-password"
+                          className={INPUT_CLASS}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </section>
+              )}
 
               <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
                 <motion.button
@@ -593,6 +926,53 @@ export default function Tenants() {
                 </motion.button>
               </div>
             </form>
+          </motion.section>
+        </div>
+      )}
+      {onboardingResult && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-stone-950/70 p-4 backdrop-blur-sm">
+          <motion.section
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            className="w-full max-w-lg rounded-[2rem] border border-stone-200 bg-white p-7 shadow-2xl"
+          >
+            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-stone-400">
+              Tenant Onboarding Completed
+            </p>
+            <h2 className="mt-2 text-3xl font-black tracking-tighter">
+              Temporary portal access
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-stone-500">
+              Share these credentials securely. The temporary password will disappear after closing this window.
+            </p>
+
+            <div className="mt-6 space-y-3 rounded-2xl bg-stone-50 p-5">
+              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Tenant</p><p className="mt-1 font-black">{onboardingResult.tenantName}</p></div>
+              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Accommodation</p><p className="mt-1 font-semibold">{onboardingResult.buildingName} · Room {onboardingResult.roomNumber}</p></div>
+              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Username</p><p className="mt-1 font-mono text-sm">{onboardingResult.username}</p></div>
+              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Temporary Password</p><p className="mt-1 font-mono text-sm">{onboardingResult.temporaryPassword}</p></div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <motion.button
+                type="button"
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setOnboardingResult(null)}
+                className="rounded-full border border-stone-300 px-6 py-3 text-[9px] font-bold uppercase tracking-widest"
+              >
+                Close and Hide Password
+              </motion.button>
+              <motion.button
+                type="button"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                disabled={isCopying}
+                onClick={copyCredentials}
+                className="rounded-full bg-stone-900 px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-white disabled:opacity-50"
+              >
+                {isCopying ? "Copying..." : "Copy Credentials"}
+              </motion.button>
+            </div>
           </motion.section>
         </div>
       )}

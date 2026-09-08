@@ -3,6 +3,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
+import Notifications from "./pages/Notifications.jsx";
 import AdminDashboard from "./pages/admin/Dashboard.jsx";
 import Buildings from "./pages/admin/Buildings.jsx";
 import Rooms from "./pages/admin/Rooms.jsx";
@@ -22,10 +23,12 @@ export default function App() {
           <Route path="/admin/buildings" element={<Buildings />} />
           <Route path="/admin/rooms" element={<Rooms />} />
           <Route path="/admin/tenants" element={<Tenants />} />
+          <Route path="/admin/notifications" element={<Notifications />} />
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["TENANT"]} />}>
           <Route path="/tenant/dashboard" element={<TenantDashboard />} />
+          <Route path="/tenant/notifications" element={<Notifications />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
