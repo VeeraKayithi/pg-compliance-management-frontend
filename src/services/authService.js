@@ -123,9 +123,7 @@ export const isAuthenticated = () => {
   return true;
 };
 
-export const hasRole = (
-  allowedRoles = []
-) => {
+export const hasRole = (allowedRoles = []) => {
   const role = getRole();
 
   if (!role) {

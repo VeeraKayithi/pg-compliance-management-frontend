@@ -17,8 +17,6 @@ const EMPTY_FORM = {
   roomId: "",
   createPortalAccount: true,
   temporaryUsername: "",
-  temporaryPassword: "",
-  confirmTemporaryPassword: "",
 };
 
 const INPUT_CLASS =
@@ -61,9 +59,7 @@ export default function Tenants() {
   const [processingTenantId, setProcessingTenantId] = useState(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [onboardingResult, setOnboardingResult] = useState(null);
   const [accountRecovery, setAccountRecovery] = useState(null);
-  const [isCopying, setIsCopying] = useState(false);
 
   const clearError = useCallback(() => {
     setError("");
@@ -248,8 +244,6 @@ export default function Tenants() {
       roomId: tenant.roomId || "",
       createPortalAccount: false,
       temporaryUsername: "",
-      temporaryPassword: "",
-      confirmTemporaryPassword: "",
     });
     setError("");
     setSuccessMessage("");
@@ -292,32 +286,11 @@ export default function Tenants() {
 
     if (
       !editingTenantId &&
-      formData.createPortalAccount
+      formData.createPortalAccount &&
+      !formData.temporaryUsername.trim()
     ) {
-      if (
-        !formData.temporaryUsername.trim() ||
-        !formData.temporaryPassword
-      ) {
-        setError(
-          "Temporary username and password are required for portal access."
-        );
-        return;
-      }
-
-      if (formData.temporaryPassword.length < 8) {
-        setError(
-          "Temporary password must contain at least 8 characters."
-        );
-        return;
-      }
-
-      if (
-        formData.temporaryPassword !==
-        formData.confirmTemporaryPassword
-      ) {
-        setError("Temporary passwords do not match.");
-        return;
-      }
+      setError("Temporary username is required for portal access.");
+      return;
     }
 
     try {
@@ -346,39 +319,18 @@ export default function Tenants() {
       const accountPayload = {
         tenantId: createdTenant.tenantId,
         username: formData.temporaryUsername.trim(),
-        temporaryPassword: formData.temporaryPassword,
       };
 
       try {
         await createTenantAccount(accountPayload);
 
-        const selectedRoom = rooms.find(
-          (room) =>
-            String(room.roomId) ===
-            String(createdTenant.roomId || tenantPayload.roomId)
-        );
-
-        setOnboardingResult({
-          tenantName: createdTenant.name,
-          buildingName:
-            selectedRoom?.buildingName || "Not available",
-          roomNumber:
-            selectedRoom?.roomNumber ||
-            createdTenant.roomNumber ||
-            "Not available",
-          username: accountPayload.username,
-          temporaryPassword: accountPayload.temporaryPassword,
-        });
-
         setSuccessMessage(
-          "Tenant and portal account created successfully."
-        );
-      } catch (accountError) {
+          "Tenant and portal account created. Activation email sent to the Tenant."
+        );      } catch (accountError) {
         setAccountRecovery({
           tenantId: createdTenant.tenantId,
           tenantName: createdTenant.name,
           username: accountPayload.username,
-          temporaryPassword: accountPayload.temporaryPassword,
         });
 
         setError(
@@ -417,7 +369,6 @@ export default function Tenants() {
       await createTenantAccount({
         tenantId: accountRecovery.tenantId,
         username: accountRecovery.username,
-        temporaryPassword: accountRecovery.temporaryPassword,
       });
 
       setOnboardingResult({
@@ -425,7 +376,6 @@ export default function Tenants() {
         buildingName: "Already assigned",
         roomNumber: "Already assigned",
         username: accountRecovery.username,
-        temporaryPassword: accountRecovery.temporaryPassword,
       });
       setAccountRecovery(null);
       setSuccessMessage("Portal account created successfully.");
@@ -438,30 +388,6 @@ export default function Tenants() {
       );
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const copyCredentials = async () => {
-    if (!onboardingResult) {
-      return;
-    }
-
-    const credentialText = [
-      "Nandu PG Portal Credentials",
-      `Tenant: ${onboardingResult.tenantName}`,
-      `Username: ${onboardingResult.username}`,
-      `Temporary Password: ${onboardingResult.temporaryPassword}`,
-      "Login URL: /login",
-    ].join("\n");
-
-    try {
-      setIsCopying(true);
-      await navigator.clipboard.writeText(credentialText);
-      setSuccessMessage("Temporary credentials copied.");
-    } catch {
-      setError("Unable to copy credentials. Please copy them manually.");
-    } finally {
-      setIsCopying(false);
     }
   };
 
@@ -792,7 +718,7 @@ export default function Tenants() {
                   type="email"
                   value={formData.email}
                   onChange={handleFormChange}
-                  placeholder="Enter email address (optional)"
+                  placeholder="Enter email address"
                   className={INPUT_CLASS}
                 />
               </label>
@@ -838,7 +764,7 @@ export default function Tenants() {
                         Create Portal Account
                       </span>
                       <span className="mt-1 block text-xs text-stone-500">
-                        Create temporary login credentials for this tenant.
+                        Send a secure account activation link to the Tenant email.
                       </span>
                     </div>
                     <input
@@ -866,35 +792,7 @@ export default function Tenants() {
                         />
                       </label>
 
-                      <label className="block">
-                        <span className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-stone-500">
-                          Temporary Password
-                        </span>
-                        <input
-                          name="temporaryPassword"
-                          type="password"
-                          value={formData.temporaryPassword}
-                          onChange={handleFormChange}
-                          placeholder="Minimum 8 characters"
-                          autoComplete="new-password"
-                          className={INPUT_CLASS}
-                        />
-                      </label>
 
-                      <label className="block">
-                        <span className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-stone-500">
-                          Confirm Temporary Password
-                        </span>
-                        <input
-                          name="confirmTemporaryPassword"
-                          type="password"
-                          value={formData.confirmTemporaryPassword}
-                          onChange={handleFormChange}
-                          placeholder="Re-enter temporary password"
-                          autoComplete="new-password"
-                          className={INPUT_CLASS}
-                        />
-                      </label>
                     </div>
                   )}
                 </section>
@@ -926,53 +824,6 @@ export default function Tenants() {
                 </motion.button>
               </div>
             </form>
-          </motion.section>
-        </div>
-      )}
-      {onboardingResult && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-stone-950/70 p-4 backdrop-blur-sm">
-          <motion.section
-            initial={{ opacity: 0, y: 18, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="w-full max-w-lg rounded-[2rem] border border-stone-200 bg-white p-7 shadow-2xl"
-          >
-            <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-stone-400">
-              Tenant Onboarding Completed
-            </p>
-            <h2 className="mt-2 text-3xl font-black tracking-tighter">
-              Temporary portal access
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-stone-500">
-              Share these credentials securely. The temporary password will disappear after closing this window.
-            </p>
-
-            <div className="mt-6 space-y-3 rounded-2xl bg-stone-50 p-5">
-              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Tenant</p><p className="mt-1 font-black">{onboardingResult.tenantName}</p></div>
-              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Accommodation</p><p className="mt-1 font-semibold">{onboardingResult.buildingName} · Room {onboardingResult.roomNumber}</p></div>
-              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Username</p><p className="mt-1 font-mono text-sm">{onboardingResult.username}</p></div>
-              <div><p className="text-[8px] font-bold uppercase tracking-widest text-stone-400">Temporary Password</p><p className="mt-1 font-mono text-sm">{onboardingResult.temporaryPassword}</p></div>
-            </div>
-
-            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setOnboardingResult(null)}
-                className="rounded-full border border-stone-300 px-6 py-3 text-[9px] font-bold uppercase tracking-widest"
-              >
-                Close and Hide Password
-              </motion.button>
-              <motion.button
-                type="button"
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                disabled={isCopying}
-                onClick={copyCredentials}
-                className="rounded-full bg-stone-900 px-6 py-3 text-[9px] font-bold uppercase tracking-widest text-white disabled:opacity-50"
-              >
-                {isCopying ? "Copying..." : "Copy Credentials"}
-              </motion.button>
-            </div>
           </motion.section>
         </div>
       )}

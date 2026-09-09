@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 import { getMyUnreadCount } from "../../services/notificationService.js";
 
-export default function NotificationBell({ destination = "/notifications" }) {
+export default function NotificationBell({
+  destination = "/notifications",
+}) {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -13,12 +15,24 @@ export default function NotificationBell({ destination = "/notifications" }) {
       const response = await getMyUnreadCount();
       setUnreadCount(Number(response?.unreadCount) || 0);
     } catch (error) {
-      console.error("Unable to load unread notification count:", error);
+      console.error(
+        "Unable to load unread notification count:",
+        error
+      );
     }
   }, []);
 
   useEffect(() => {
     loadUnreadCount();
+
+    const refreshUnreadCount = () => {
+      loadUnreadCount();
+    };
+
+    window.addEventListener(
+      "notifications:updated",
+      refreshUnreadCount
+    );
 
     const intervalId = window.setInterval(
       loadUnreadCount,
@@ -27,6 +41,10 @@ export default function NotificationBell({ destination = "/notifications" }) {
 
     return () => {
       window.clearInterval(intervalId);
+      window.removeEventListener(
+        "notifications:updated",
+        refreshUnreadCount
+      );
     };
   }, [loadUnreadCount]);
 
@@ -49,7 +67,11 @@ export default function NotificationBell({ destination = "/notifications" }) {
       transition={{ duration: 0.16 }}
       onClick={openNotifications}
       className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-800 shadow-sm transition-colors duration-200 hover:border-stone-900 hover:bg-stone-50 hover:shadow-md"
-      aria-label={`${unreadCount} unread notifications`}
+      aria-label={
+        unreadCount > 0
+          ? `${unreadCount} unread notifications`
+          : "Open notifications"
+      }
     >
       <motion.svg
         width="18"
@@ -62,10 +84,7 @@ export default function NotificationBell({ destination = "/notifications" }) {
             ? { rotate: [0, -8, 8, -5, 5, 0] }
             : { rotate: 0 }
         }
-        transition={{
-          duration: 0.55,
-          delay: 0.2,
-        }}
+        transition={{ duration: 0.55, delay: 0.2 }}
       >
         <path
           d="M18 8A6 6 0 0 0 6 8c0 7-3 7-3 9h18c0-2-3-2-3-9Z"
@@ -86,7 +105,12 @@ export default function NotificationBell({ destination = "/notifications" }) {
         <motion.span
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 450, damping: 22 }}
+          exit={{ scale: 0 }}
+          transition={{
+            type: "spring",
+            stiffness: 450,
+            damping: 22,
+          }}
           className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-stone-900 px-1 text-[7px] font-black text-white ring-2 ring-white"
         >
           {unreadCount > 99 ? "99+" : unreadCount}

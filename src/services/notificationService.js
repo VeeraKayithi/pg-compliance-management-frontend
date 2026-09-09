@@ -1,24 +1,63 @@
 import apiClient from "./apiClient.js";
 
-const URL = "/notifications";
+const NOTIFICATION_URL = "/notifications";
 
-export const getMyNotifications = async () =>
-  (await apiClient.get(`${URL}/me`)).data;
+export const getMyNotifications = async () => {
+  const response = await apiClient.get(
+    `${NOTIFICATION_URL}/me`
+  );
 
-export const getMyUnreadNotifications = async () =>
-  (await apiClient.get(`${URL}/me/unread`)).data;
+  return response.data;
+};
 
-export const getMyDismissedNotifications = async () =>
-  (await apiClient.get(`${URL}/me/dismissed`)).data;
+export const getMyUnreadNotifications = async () => {
+  const response = await apiClient.get(
+    `${NOTIFICATION_URL}/me/unread`
+  );
 
-export const getMyUnreadCount = async () =>
-  (await apiClient.get(`${URL}/me/unread-count`)).data;
+  return response.data;
+};
 
-export const markNotificationAsRead = async (notificationId) =>
-  (await apiClient.put(`${URL}/${notificationId}/read`)).data;
+export const getMyDismissedNotifications = async () => {
+  const response = await apiClient.get(
+    `${NOTIFICATION_URL}/me/dismissed`
+  );
 
-export const dismissNotification = async (notificationId) =>
-  (await apiClient.put(`${URL}/${notificationId}/dismiss`)).data;
+  return response.data;
+};
 
-export const markAllNotificationsAsRead = async () =>
-  (await apiClient.put(`${URL}/me/read-all`)).data;
+export const getMyUnreadCount = async () => {
+  const response = await apiClient.get(
+    `${NOTIFICATION_URL}/me/unread-count`
+  );
+
+  return response.data;
+};
+
+export const markNotificationAsRead = async (
+  notificationId
+) => {
+  const response = await apiClient.put(
+    `${NOTIFICATION_URL}/${notificationId}/read`
+  );
+
+  return response.data;
+};
+
+export const dismissNotification = async (
+  notificationId
+) => {
+  const response = await apiClient.put(
+    `${NOTIFICATION_URL}/${notificationId}/dismiss`
+  );
+
+  return response.data;
+};
+
+export const markAllNotificationsAsRead = async () => {
+  const response = await apiClient.put(
+    `${NOTIFICATION_URL}/me/read-all`
+  );
+
+  return response.data;
+};
