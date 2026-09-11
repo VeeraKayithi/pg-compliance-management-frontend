@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/Dashboard.jsx";
 import Buildings from "./pages/admin/Buildings.jsx";
 import Rooms from "./pages/admin/Rooms.jsx";
 import Tenants from "./pages/admin/Tenants.jsx";
+import Communications from "./pages/admin/Communications.jsx";
 
 import TenantDashboard from "./pages/tenant/Dashboard.jsx";
 
@@ -48,9 +49,7 @@ export default function App() {
         {/* Admin-protected routes */}
         <Route
           element={
-            <ProtectedRoute
-              allowedRoles={["ADMIN"]}
-            />
+            <ProtectedRoute allowedRoles={["ADMIN"]} />
           }
         >
           <Route
@@ -74,11 +73,15 @@ export default function App() {
           />
 
           <Route
+            path="/admin/communications"
+            element={<Communications />}
+          />
+
+          <Route
             path="/admin/notifications"
             element={<Notifications />}
           />
         </Route>
-
         {/* Tenant-protected routes */}
         <Route
           element={

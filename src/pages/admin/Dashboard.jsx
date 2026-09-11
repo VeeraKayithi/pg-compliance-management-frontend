@@ -26,10 +26,13 @@ export default function AdminDashboard() {
   useAutoDismiss(error, clearError, 4000);
 
   const load = async () => {
+
+
     try {
       setLoading(true);
       setError("");
       const [b, r, t] = await Promise.all([getAllBuildings(), getAllRooms(), getAllTenants()]);
+
       const safeB = Array.isArray(b) ? b : [];
       setBuildings(safeB);
       setRooms(Array.isArray(r) ? r : []);

@@ -9,12 +9,12 @@ const links = [
   { label: "Buildings", path: "/admin/buildings" },
   { label: "Rooms", path: "/admin/rooms" },
   { label: "Tenants", path: "/admin/tenants" },
+  { label: "Communications", path: "/admin/communications" },
 ];
 
 export default function AdminHeader({ title, subtitle }) {
   const navigate = useNavigate();
   const username = getUsername() || "Admin";
-
   const handleLogout = () => {
     logoutUser();
     navigate("/login", { replace: true });
@@ -33,7 +33,6 @@ export default function AdminHeader({ title, subtitle }) {
             {subtitle && <p className="mt-1 text-sm text-stone-500">{subtitle}</p>}
           </div>
         </div>
-
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <nav className="flex max-w-full gap-1 overflow-x-auto rounded-full border border-stone-200 bg-stone-50 p-1 shadow-inner">
             {links.map((link) => (

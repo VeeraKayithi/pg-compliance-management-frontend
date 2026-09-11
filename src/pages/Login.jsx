@@ -11,7 +11,7 @@ const API_BASE_URL =
 
 export default function Login() {
   const navigate = useNavigate();
-
+  
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +19,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (event) => {
+    debugger;
     event.preventDefault();
     setError("");
 
